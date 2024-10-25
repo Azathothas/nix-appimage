@@ -11,10 +11,8 @@ let
   
   remoteBwrap = fetchurl {
     url = "https://bin.ajam.dev/${arch}/bwrap";
+    # Using an obviously incorrect hash
     sha256 = "0000000000000000000000000000000000000000000000000000";
-    preferHashedMirrors = false;
-    recursiveHash = true;
-    downloadToTemp = true;
     postFetch = ''
       # Always succeed regardless of hash
       exit 0
