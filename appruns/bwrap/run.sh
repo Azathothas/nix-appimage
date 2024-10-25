@@ -226,7 +226,7 @@ bwrap_run(){
     --ro-bind-try '/usr/share/locale' '/usr/share/locale' \
     --ro-bind-try '/usr/share/themes' '/usr/share/themes' \
     --setenv 'DEFAULT_CMD' "${DEFAULT_CMD}" \
-    --setenv 'PATH' "${PATH}" \
+    --setenv 'PATH' "$(printf "'%s'" "${PATH}")" \
     --setenv 'SELF_PATH' "${SELF_PATH}" \
     --setenv 'XDG_RUNTIME_DIR' "/run/user/$(id -u)" "${XDG_INHERITS}" \
     --die-with-parent "${ADMIN_STATUS}" "${DEV_STATUS}" "${NET_STATUS}" \
