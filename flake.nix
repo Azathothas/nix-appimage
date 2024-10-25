@@ -31,7 +31,7 @@
 
         lib.mkAppImage = pkgs.callPackage ./mkAppImage.nix {
           mkappimage-runtime = packages.appimage-runtimes.appimage-type2-runtime;
-          mkappimage-apprun = packages.appimage-appruns.userns-chroot;
+          mkappimage-apprun = packages.appimage-appruns.bwrap;
         };
 
         bundlers.default = drv:
