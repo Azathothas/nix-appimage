@@ -89,25 +89,35 @@ fi
 SYSTMP="$(dirname "$(mktemp -u)")"
 #XDG
 if [ -d "${HOME}" ]; then
-  XDG_CACHE_HOME="${HOME}/.cache"
-  XDG_CONFIG_HOME="${HOME}/.config"
-  XDG_DATA_HOME="${HOME}/.local/share"
-  XDG_STATE_HOME="${HOME}/.local/state"
-  XDG_HAS_VARS="YES"
   [ "${VERBOSE}" = "1" ] && echo "INFO: Setting HOME Directory --> ${HOME}"
+  if [ -z "${XDG_CACHE_HOME}" ]; then
+     XDG_CACHE_HOME="${HOME}/.cache"
+  fi
+  if [ -z "${XDG_CONFIG_HOME}" ]; then
+     XDG_CONFIG_HOME="${HOME}/.config"
+  fi
+  if [ -z "${XDG_DATA_HOME}" ]; then
+     XDG_DATA_HOME="${HOME}/.local/share"
+  fi
+  if [ -z "${XDG_RUNTIME_DIR}" ]; then
+     XDG_RUNTIME_DIR="/run/user/$(id -u)"
+  fi
+  if [ -z "${XDG_STATE_HOME}" ]; then
+     XDG_STATE_HOME="${HOME}/.local/state"
+  fi
+  XDG_HAS_VARS="YES"
 else
   [ "${VERBOSE}" = "1" ] && echo "WARNING: FAILED to set HOME Directory"
+  [ "${VERBOSE}" = "1" ] && echo "WARNING: NOT Inheriting any XDG VARS"
 fi
 #DISPLAY
 if [ -n "${WAYLAND_DISPLAY:-}" ]; then
-  XDG_RUNTIME_DIR="/run/user/$(id -u)"
   WAYLAND_DIS_BIND="${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}"
   [ "${VERBOSE}" = "1" ] && echo "INFO: Setting WAYLAND_DISPLAY --> ${WAYLAND_DISPLAY}"
   DISPLAY_SHARES="--setenv 'WAYLAND_DISPLAY' ${WAYLAND_DISPLAY}"
   [ "${VERBOSE}" = "1" ] && echo "INFO: Binding WAYLAND_DISPLAY --> ${WAYLAND_DIS_BIND} (RO)"
   DISPLAY_SHARES="${DISPLAY_SHARES} --ro-bind-try ${WAYLAND_DIS_BIND} ${WAYLAND_DIS_BIND}"
 elif [ -n "${DISPLAY:-}" ]; then
-  XDG_RUNTIME_DIR="/run/user/$(id -u)"
   [ "${VERBOSE}" = "1" ] && echo "INFO: Setting X11_DISPLAY --> ${DISPLAY}"
   XDISPLAY_SHARES="--setenv 'DISPLAY' ${DISPLAY}"
   if [ -z "${XAUTH}" ] || [ "${XAUTH}" = "" ]; then
@@ -229,7 +239,7 @@ fi
 bwrap_run(){
   [ "${VERBOSE}" = "1" ] && echo "INFO: BubbleWrap Version --> $("${BWRAP_BIN}" --version)"
   eval exec "${BWRAP_BIN}" \
-    --dir "/run/user/$(id -u)" \
+    --dir "${XDG_RUNTIME_DIR}" \
     --proc "/proc" \
     --bind-try "/run" "/run" \
     --bind-try "${SYSTMP}" "/tmp" \
@@ -251,7 +261,7 @@ bwrap_run(){
     --setenv 'DEFAULT_CMD' "${DEFAULT_CMD}" \
     --setenv 'PATH' "$(printf "'%s'" "${PATH}")" \
     --setenv 'SELF_PATH' "${SELF_PATH}" \
-    --setenv 'XDG_RUNTIME_DIR' "/run/user/$(id -u)" "${XDG_INHERITS}" \
+    --setenv 'XDG_RUNTIME_DIR' "${XDG_RUNTIME_DIR}" "${XDG_INHERITS}" \
     --die-with-parent "${ADMIN_STATUS}" "${DEV_STATUS}" "${NET_STATUS}" \
     "${SHARE_HOME}" "${SHARE_MEDIA}" "${SHARE_MNT}" "${SHARE_OPT}" "${DEFAULT_CMD}" "$@"
 }
