@@ -8,15 +8,12 @@ let
     "x86_64-linux" = "x86_64";
     "aarch64-linux" = "aarch64";
   }.${system} or (throw "Unsupported system: ${system}");
-  
+ #https://github.com/Azathothas/nix-appimage/releases/tag/bwrap
   remoteBwrap = fetchurl {
-    url = "https://bin.ajam.dev/${arch}/bwrap";
-    # Using an obviously incorrect hash
-    sha256 = "0000000000000000000000000000000000000000000000000000";
-    postFetch = ''
-      # Always succeed regardless of hash
-      exit 0
-    '';
+    url = "https://github.com/Azathothas/nix-appimage/releases/download/bwrap/bwrap-${arch}";
+    sha256 = if arch == "x86_64" then "71806b86ef85476024a5a872de1fa997f01c321bb0ce5767352dda82ecdfcaf4" 
+              else if arch == "aarch64" then "fbd145a9d93f1a160c85c69ff8847885a1b2fd744ebf3a6db3f82a4faf025262"
+              else throw "Unsupported architecture: ${arch}";
   };
 in
 runCommand "AppRun" { } ''
