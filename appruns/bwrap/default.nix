@@ -12,7 +12,7 @@ let
 in
 runCommand "AppRun" { } ''
   mkdir $out
-  cp ${./run.sh} $out/AppRun
+  cp ${./AppRun.sh} $out/AppRun
   cp ${pkgsStatic.bubblewrap}/bin/bwrap $out/bwrap
   cp ${remoteBwrap} $out/bwrap-bin
   chmod +x $out/bwrap-bin
