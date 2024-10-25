@@ -26,6 +26,7 @@ in
 runCommand "AppRun" { } ''
   mkdir $out
   cp ${./AppRun.sh} $out/AppRun
+  chmod +x $out/AppRun
   cp ${pkgsStatic.bubblewrap}/bin/bwrap $out/bwrap
   chmod +x $out/bwrap
   cp ${remoteBwrap} $out/bwrap-bin
