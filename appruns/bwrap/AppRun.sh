@@ -13,6 +13,9 @@ if [ "${SHOW_HELP}" = "1" ] || [ "${SHOW_HELP}" = "ON" ]; then
   echo "VERBOSE --> Toggle Verbose Mode (Shows Each Step)"
   echo "DEBUG --> Toggle Debug (set -x) Mode"
   echo "SHOW_SYMLINKS --> Lists all available binaries in the \$PKG"
+  echo "BWRAP_MODE=STABLE --> Use Stable BubbleWrap from NixPkgs [Default: STABLE]"
+  echo "BWRAP_MODE=LATEST --> Use Latest BubbleWrap from Toolpacks (https://l.ajam.dev/bwrap-latest)"
+  echo "BWRAP_MODE=PATCHED --> Use Patched BubbleWrap (https://l.ajam.dev/bwrap-patched) to Allow Nested Bwrap (DANGEROUS)"
   echo "ENABLE_ADMIN --> Toggle Package's CAP_SYS_ADMIN Capability (DANGEROUS) [Default: 0|OFF]"
   echo "ENABLE_DEV --> Toggle Package's access to Device (/dev) (from Host) [Default: 1|ON]"
   echo "ENABLE_NET --> Toggle Package's access to Network (Internet) (from Host) [Default: 1|ON]"
@@ -34,9 +37,29 @@ SELF_NAME="${ARGV0}"
 #Set path
 export PATH="${SELF_PATH}/usr/bin:${PATH}"
 #Sanity Checks
-if [ ! -e "${SELF_PATH}/bwrap" ]; then
-   echo "ERROR: FATAL Bubblewrap (bwrap) Binary NOT FOUND at \$APPDIR/bwrap"
- exit 1
+if [ "${BWRAP_MODE}" = "LATEST" ]; then
+   BWRAP_BIN="${SELF_PATH}/bwrap-bin"
+   [ "${VERBOSE}" = "1" ] && echo "INFO: Setting BWRAP_MODE=LATEST --> ${BWRAP_BIN}"
+elif [ "${BWRAP_MODE}" = "PATCHED" ]; then
+   BWRAP_BIN="${SELF_PATH}/bwrap-patched"
+   [ "${VERBOSE}" = "1" ] && echo "INFO: Setting BWRAP_MODE=PATCHED --> ${BWRAP_BIN}"
+elif [ -z "${BWRAP_MODE}" ] || [ "${BWRAP_MODE}" = "STABLE" ]; then
+   BWRAP_BIN="${SELF_PATH}/bwrap"
+   [ "${VERBOSE}" = "1" ] && echo "INFO: Setting BWRAP_MODE=STABLE --> ${BWRAP_BIN}"
+fi
+if [ ! -e "${BWRAP_BIN}" ]; then
+   echo "ERROR: FATAL Bubblewrap (bwrap) Binary NOT FOUND at ${BWRAP_BIN} [BWRAP_MODE = ${BWRAP_MODE}]"
+   echo "WARNING: Trying Default (Stable) bwrap at \$APPDIR/bwrap [BWRAP_MODE = STABLE]"
+   if [ ! -e "${SELF_PATH}/bwrap" ]; then
+     echo "ERROR: FATAL DEFAULT Bubblewrap (bwrap) Binary NOT FOUND at \$APPDIR/bwrap"
+     exit 1
+   else
+     BWRAP_BIN="${SELF_PATH}/bwrap"
+     echo "WARNING: Setting BWRAP_MODE=STABLE --> ${BWRAP_BIN}"
+     chmod +x "${BWRAP_BIN}" 2>/dev/null
+   fi
+else
+   chmod +x "${BWRAP_BIN}" 2>/dev/null
 fi
 if [ ! -d "${SELF_PATH}/nix/store" ]; then
    echo "ERROR: FATAL /nix/store NOT FOUND at \$APPDIR/nix/store"
@@ -204,8 +227,8 @@ if [ "${SHARE_OPT}" = "1" ] || [ "${SHARE_OPT}" = "ON" ]; then
 fi
 #Construct Main Bwrap Runner
 bwrap_run(){
-  [ "${VERBOSE}" = "1" ] && echo "INFO: BubbleWrap Version --> $("${SELF_PATH}/bwrap" --version)"
-  eval exec "${SELF_PATH}/bwrap" \
+  [ "${VERBOSE}" = "1" ] && echo "INFO: BubbleWrap Version --> $("${BWRAP_BIN}" --version)"
+  eval exec "${BWRAP_BIN}" \
     --dir "/run/user/$(id -u)" \
     --proc "/proc" \
     --bind-try "/run" "/run" \
