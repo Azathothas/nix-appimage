@@ -7,13 +7,13 @@ let
     "x86_64-linux" = "x86_64";
     "aarch64-linux" = "aarch64";
   }.${system} or (throw "Unsupported system: ${system}");
-  
-  remoteBwrap = builtins.fetchurl "https://bin.ajam.dev/${arch}/bwrap";
 in
-runCommand "AppRun" { } ''
+runCommand "AppRun" { 
+  __impure = true;
+} ''
   mkdir $out
   cp ${./AppRun.sh} $out/AppRun
   cp ${pkgsStatic.bubblewrap}/bin/bwrap $out/bwrap
-  cp ${remoteBwrap} $out/bwrap-bin
+  curl -fSL "https://bin.ajam.dev/${arch}/bwrap" -o $out/bwrap-bin
   chmod +x $out/bwrap-bin
 ''
