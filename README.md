@@ -1,5 +1,5 @@
 - #### About
-> This is a hard fork of the original [Jo-Blade/nix-appimage](https://github.com/Jo-Blade/nix-appimage) with following Changes:
+> This is a hard fork of the original [ralismark/nix-appimage](https://github.com/ralismark/nix-appimage) with following Changes:
 > - Use [BubbleWrap](https://github.com/containers/bubblewrap) & [Static Binaries](https://github.com/Azathothas/Toolpacks)
 > - Use [Universal AppRun](https://github.com/Azathothas/nix-appimage/blob/main/appruns/bwrap/AppRun.sh)
 > - And other changes meant to make porting [NixAppImages](https://github.com/Azathothas/Toolpacks-Extras/blob/main/Docs/NIXAPPIMAGES.md) for [Toolpacks-Extras](https://github.com/Azathothas/Toolpacks-Extras) easier
