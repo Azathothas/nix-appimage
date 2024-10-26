@@ -15,6 +15,14 @@
 
 
 #-------------------------------------------------------#
+##Can be run with DEBUG=1, VERBOSE=1 displays additional info
+if [ "${DEBUG}" = "1" ]; then
+    set -x
+fi
+#-------------------------------------------------------#
+
+
+#-------------------------------------------------------#
 ##Check PATH [NEEDS TO BE AT TOP]
 if [ -z "${PATH}" ] || [ "${PATH}" = "" ]; then
     PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -80,10 +88,6 @@ if [ "${SHOW_HELP}" = "1" ] || [ "${SHOW_HELP}" = "ON" ]; then
   echo "Example (Mounts Host /usr/bin to Container /usr/bin): BWRAP_EXTRA_ARGS=\"--ro-bind-try /usr/bin /usr/bin\" /path/to/\$APP.NixAppImage"
   printf "\n" ; exit 0
 fi
-##Can be run with DEBUG=1, VERBOSE=1 displays additional info
-if [ "${DEBUG}" = "1" ]; then
-    set -x
-fi
 #-------------------------------------------------------#
 
 
@@ -94,7 +98,8 @@ SELF_PATH="$(dirname "$(realpath "$0")")" ; export SELF_PATH
 #Get the ${ARGV0}
 SELF_NAME="${ARGV0:-${0##*/}}" ; export SELF_NAME
 PATH="${SELF_PATH}/usr/bin:${PATH}"
-SANITIZED_PATH="$(printf "'%s'" "${PATH}")" ; export PATH="${SANITIZED_PATH}"
+SANITIZED_PATH="$(printf "'%s'" "${PATH}")"
+export PATH SANITIZED_PATH
 [ "${VERBOSE}" = "1" ] && echo "INFO: Setting FINAL PATH --> ${PATH}"
 ##Sanity Checks
 case "${BWRAP_MODE}" in
@@ -357,8 +362,7 @@ if [ "${SHARE_OPT}" = "1" ] || [ "${SHARE_OPT}" = "ON" ]; then
 fi
 #Get BWRAP_EXTRA_ARGS
 if [ "${BWRAP_EXTRA_ARGS+set}" = "set" ] && [ "${#BWRAP_EXTRA_ARGS}" -gt 2 ]; then
-   SANITIZED_PATH="$(printf "'%s'" "${PATH}")" ; export PATH="${SANITIZED_PATH}"
-   SANITIZED_BWRAP_EXTRA_ARGS="$(printf "%s" "${BWRAP_EXTRA_ARGS}" | tr -d "'\"")"
+   SANITIZED_BWRAP_EXTRA_ARGS="$(printf "'%s'" "${BWRAP_EXTRA_ARGS}" | tr -d "'\"")"
    export BWRAP_EXTRA_ARGS="${SANITIZED_BWRAP_EXTRA_ARGS}"
    echo "INFO: Passing BWRAP_EXTRA_ARGS to BWRAP: '${BWRAP_EXTRA_ARGS}'"
 fi
@@ -391,7 +395,7 @@ bwrap_run(){
     --ro-bind-try '/usr/share/locale' '/usr/share/locale' \
     --ro-bind-try '/usr/share/themes' '/usr/share/themes' \
     --setenv 'DEFAULT_CMD' "${DEFAULT_CMD}" \
-    --setenv 'PATH' "${PATH}" \
+    --setenv 'PATH' "${SANITIZED_PATH}" \
     --setenv 'SELF_PATH' "${SELF_PATH}" \
     --setenv 'XDG_RUNTIME_DIR' "${XDG_RUNTIME_DIR}" "${XDG_INHERITS}" \
     --die-with-parent "${ADMIN_STATUS}" "${DEV_STATUS}" "${NET_STATUS}" "${SHARE_HOME}" "${SHARE_MEDIA}" \
